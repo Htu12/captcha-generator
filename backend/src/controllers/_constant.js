@@ -6,13 +6,23 @@ const HEADER = {
     'Connection': 'keep-alive',
 };
 
-const PRODUCTION = "prod";
-const SAMESITE = "None"; // Use 'None' for cross-site cookies, 'Lax' for same-site cookies
+const COOKIE_KEY = "captcha_token"
+const SAMESITE = "None"; 
 const MAX_AGE = 2 * 60 * 1000;
+
+const COOKIE = {
+    key: COOKIE_KEY,
+    options: {
+        httpOnly: true,
+        secure: true,
+        sameSite: SAMESITE,
+        maxAge: MAX_AGE,
+    }
+}
+
+
 
 module.exports = {
     HEADER,
-    PRODUCTION,
-    MAX_AGE,
-    SAMESITE
+    COOKIE,
 };

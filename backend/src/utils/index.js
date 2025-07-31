@@ -4,10 +4,8 @@ const asyncHandler = (fn) => (req, res, next) => {
 
 
 
-
-const httpStatusCode = require('./httpStatusCode');
-
 module.exports = {
     asyncHandler,
-    httpStatusCode
+    StatusCodes: require("./statusCodes"),
+    ReasonPhrases: require("./reasonPhrases"),
 };

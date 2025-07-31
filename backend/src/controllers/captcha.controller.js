@@ -1,4 +1,6 @@
-const { CaptchaService } = require('../services/index');
+const { CaptchaService } = require('../services');
+const { OK, SuccessResponse } = require("../utils/response/success.response")
+
 const _constant = require('./_constant');
 
 class CaptchaController {
@@ -7,31 +9,21 @@ class CaptchaController {
         let { imageBuffer, encryptedSolution } = await CaptchaService.createCaptchaImage();
 
         // Set encrypted captcha in httpOnly cookie
-        res.cookie('captcha_token', encryptedSolution, {
-            httpOnly: true,
-            secure: true,      
-            sameSite: _constant.SAMESITE,
-            maxAge: _constant.MAX_AGE,
-        });
+        _constant.COOKIE["value"] = encryptedSolution;
 
-        // Set headers for image blob
-        res.set(_constant.HEADER);
-
-        res.send(imageBuffer);
+        new SuccessResponse({
+            message: 'Captcha generated successfully'
+        }).send(res, _constant.HEADER, _constant.COOKIE, imageBuffer)
     }
 
     static async verifyCaptcha(req, res) {
         // Get captcha token from cookies
         const captchaToken = req.cookies?.captcha_token;
 
-        // Verify the captcha solution
-        const isValid = await CaptchaService.verifyCaptcha(captchaToken, req.body.CaptchaValue);
-
-        if (isValid) {
-            res.status(200).json({ message: 'Captcha verified successfully' });
-        } else {
-            res.status(400).json({ message: 'Invalid captcha solution' });
-        }
+        new OK({
+            message: "Captcha verified successfully",
+            data: await CaptchaService.verifyCaptcha(captchaToken, req.body.CaptchaValue),
+        }).send(res);
     }
 }
 

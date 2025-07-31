@@ -1,6 +1,7 @@
 'use strict';
 const CaptchaGeneratorService = require('./captcha-generator.service');
 const EncryptCaptchaService = require('./encrypt-captcha.service');
+const { BadRequestError } = require('../utils/response/error.response');
 const { app } = require("../config/index")
 
 class CaptchaService {
@@ -17,9 +18,15 @@ class CaptchaService {
             encryptedSolution: encryptedData
         };
     }
-    
+
     static async verifyCaptcha(encryptedToken, captchaInput) {
-        return EncryptCaptchaService.verify(encryptedToken, captchaInput);
+        let isValid = await EncryptCaptchaService.verify(encryptedToken, captchaInput);
+
+        if (!isValid) {
+            throw new BadRequestError("Invalid captcha solution");
+        }
+
+        return true;
     }
 }
 

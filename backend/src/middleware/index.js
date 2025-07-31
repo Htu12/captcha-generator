@@ -1,3 +1,5 @@
+"use strict";
+
 function log(req, res, next) {
     const start = Date.now();
     const path = req.path;
@@ -18,4 +20,7 @@ function log(req, res, next) {
     next();
 }
 
-module.exports = { log };
+
+module.exports = {
+    log
+};
