@@ -9,7 +9,8 @@ const MEDIUM = {
     fontFamily: 'random',
     fontStyle: 'random'
 }
-const EASY ={
+
+const EASY = {
     difficulty: 'easy',
     length: 4,
     width: 180,
@@ -20,6 +21,7 @@ const EASY ={
     fontFamily: 'random',
     fontStyle: 'random'
 }
+
 const HARD = {
     difficulty: 'hard',
     length: 5,

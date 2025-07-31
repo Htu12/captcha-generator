@@ -7,7 +7,7 @@ const HEADER = {
 };
 
 const COOKIE_KEY = "captcha_token"
-const SAMESITE = "None"; 
+const SAMESITE = "None";
 const MAX_AGE = 2 * 60 * 1000;
 
 const COOKIE = {
@@ -20,9 +20,21 @@ const COOKIE = {
     }
 }
 
-
+const RESPONSE_CONFIG_VALUES = {
+    error: {
+        "Invalid captcha": -1,
+        "Missing captcha token": -2,
+        "Invalid captcha solution": -3,
+    },
+    success: {
+        "Scores retrieved successfully": 1,
+        "Captcha created successfully": 2,
+        "Captcha verified successfully": 3,
+    }
+}
 
 module.exports = {
     HEADER,
     COOKIE,
+    RESPONSE_CONFIG_VALUES
 };

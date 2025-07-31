@@ -7,7 +7,7 @@ class ScoreModel {
     async getScoreBySBD(sbd) {
         const result = await this.pool.query("SELECT * FROM score_2025_19 WHERE sbd = $1", [sbd]);
         if (result.rows.length === 0) {
-            throw new Error("Score not found");
+            return null;
         }
         return result.rows[0];
     }

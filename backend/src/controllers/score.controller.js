@@ -1,6 +1,6 @@
 const { ScoreService } = require('../services');
 const { BadRequestError } = require('../utils/response/error.response');
-const { OK } = require("../utils/response/success.response");
+const { OK, NO_CONTENT } = require("../utils/response/success.response");
 
 class ScoreController {
     static async getScores(req, res) {
@@ -12,10 +12,17 @@ class ScoreController {
             throw new BadRequestError("Missing captcha token")
         }
 
+        let data = await ScoreService.searchScore(SBD, CaptchaValue, captchaToken);
+
+        if (!data) {
+            return new NO_CONTENT().send(res);
+        }
+
         new OK({
-            message: "Scores retrieved successfully",
-            data: await ScoreService.searchScore(SBD, CaptchaValue, captchaToken)
+            message: "Score retrieved successfully",
+            data: data
         }).send(res);
+
     }
 }
 
