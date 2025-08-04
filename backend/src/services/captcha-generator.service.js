@@ -15,11 +15,21 @@ class CaptchaGeneratorService {
         // Predefined colors for better performance
         this.colors = ['#2c3e50', '#e74c3c', '#3498db', '#27ae60', '#8e44ad', '#f39c12'];
     }
-
+    /**
+     * Get the character set based on difficulty level
+     * @param {*} difficulty 
+     * @returns the character set for the specified difficulty
+     */
     getCharacterSet(difficulty) {
         return this.charSets[difficulty] || this.charSets['medium'];
     }
 
+    /**
+     * 
+     * @param {*} length 
+     * @param {*} charset 
+     * @returns a random string of specified length from the charset
+     */
     generateRandomString(length, charset) {
         const bytes = randomBytes(length);
         let result = '';
@@ -31,7 +41,13 @@ class CaptchaGeneratorService {
         return result;
     }
 
-    // Optimized noise generation with fewer operations
+    /**
+     * Adds noise to the captcha image
+     * @param {*} ctx 
+     * @param {*} width 
+     * @param {*} height 
+     * @param {*} intensity 
+     */
     addNoise(ctx, width, height, intensity = 'medium') {
         const noiseConfig = {
             'low': { dots: 20, lines: 2 },
@@ -78,7 +94,12 @@ class CaptchaGeneratorService {
         }
     }
 
-    // Optimized background pattern
+    /**
+     * Adds a background pattern to the captcha image
+     * @param {*} ctx 
+     * @param {*} width 
+     * @param {*} height 
+     */
     addBackgroundPattern(ctx, width, height) {
         ctx.strokeStyle = 'rgba(200, 200, 200, 0.1)';
         ctx.lineWidth = 1;
@@ -96,6 +117,14 @@ class CaptchaGeneratorService {
         ctx.stroke();
     }
 
+/**
+ * Adds text to the captcha image with distortion effects
+ * @param {*} ctx 
+ * @param {*} text 
+ * @param {*} x 
+ * @param {*} y 
+ * @param {*} fontOptions 
+ */
     addDistortion(ctx, text, x, y, fontOptions) {
         const { fontFamily, fontStyle } = fontOptions;
         const chars = text.split('');
@@ -136,6 +165,11 @@ class CaptchaGeneratorService {
         });
     }
 
+    /**
+     * Generates a captcha image based on the provided options.
+     * @param {*} options 
+     * @returns object containing the image buffer, solution, format, size, and dimensions
+     */
     generate(options) {
         // Generate solution text
         let { difficulty, length, width, height, format, quality, noiseLevel, fontFamily, fontStyle } = options;
@@ -185,7 +219,14 @@ class CaptchaGeneratorService {
         };
     }
 
-    // Utility method to get image info
+    /**
+     * Generates image information from the provided parameters.
+     * @param {*} imageBuffer 
+     * @param {*} format 
+     * @param {*} width 
+     * @param {*} height 
+     * @returns utils method to get image information
+     */
     getImageInfo(imageBuffer, format, width, height) {
         const bytesPerPixel = imageBuffer.length / (width * height);
 

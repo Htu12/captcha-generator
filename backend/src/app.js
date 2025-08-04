@@ -1,6 +1,6 @@
 const express = require("express");
 const { log } = require("./middleware");
-const { OK } = require("./utils/response/success.response");
+const pool = require("./db");
 const router = require("./routes/index");
 const config = require("./config")
 const cookieParser = require("cookie-parser");
@@ -20,18 +20,17 @@ app.use(cors({
 //logging middleware
 app.use(log);
 
-//Test database connection
-app.get("/test-db", async (req, res) => {
-    const pool = require("./db/index");
-    const result = await pool.query("SELECT * from score_2025_19 LIMIT 10");
-    new OK({
-        message: "Database connection successful",
-        data: result.rows,
-    }).send(res);
+// Connection to the database
+pool.query("SELECT version()", (err, res) => {
+    if (err) {
+        console.error("Database connection error:", err);
+        process.exit(1);
+    }
+    console.log("Database connected at:", res.rows[0].version);
 });
 
 //API routes
-app.use("/api", router)
+app.use("/api", router);
 
 app.get("/", (req, res) => {
     res.send("Welcome to the Captcha Generator API");

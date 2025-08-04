@@ -21,11 +21,7 @@ class SuccessResponse {
             res.cookie(cookie.key, cookie.value, cookie.options);
         }
 
-        if (dataSend) {
-            res.send(dataSend);
-        } else {
-            res.status(this.statusCode).json(this);
-        }
+        dataSend ? res.send(dataSend) : res.status(this.statusCode).json(this);
     }
 }
 
@@ -53,13 +49,12 @@ class CREATED extends SuccessResponse {
 
 class NO_CONTENT extends SuccessResponse {
     constructor({
-        statusCode = StatusCodes.NO_CONTENT,
-        reasonStatusCode = ReasonPhrases.NO_CONTENT,
-    } = {}) {
+        statusCode,
+        reasonStatusCode
+    }) {
         super({
             message: reasonStatusCode,
             statusCode,
-            data: {},
         });
     }
 }
