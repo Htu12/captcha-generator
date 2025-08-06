@@ -48,13 +48,10 @@ class CREATED extends SuccessResponse {
 }
 
 class NO_CONTENT extends SuccessResponse {
-    constructor({
-        statusCode,
-        reasonStatusCode
-    }) {
+    constructor() {
         super({
-            message: reasonStatusCode,
-            statusCode,
+            message: ReasonPhrases.NO_CONTENT,
+            statusCode: StatusCodes.NO_CONTENT,
         });
     }
 }

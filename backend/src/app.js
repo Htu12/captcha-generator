@@ -1,6 +1,7 @@
 const express = require("express");
 const { log } = require("./middleware");
 const pool = require("./db");
+const path = require("path");
 const router = require("./routes/index");
 const config = require("./config")
 const cookieParser = require("cookie-parser");
@@ -16,6 +17,9 @@ app.use(cors({
     origin: config.app.base_url,
     credentials: true,
 }));
+
+//Set static files directory
+app.use(express.static(path.join(__dirname, "public")));
 
 //logging middleware
 app.use(log);
