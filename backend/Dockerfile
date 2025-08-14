@@ -1,8 +1,8 @@
 # Dựa trên Node.js bản chính thức
-FROM node:20
+FROM node:22
 
 # Tạo thư mục app trong container
-WORKDIR /usr/src/my-app
+WORKDIR /app
 
 # Copy package.json và cài đặt dependencies
 COPY package*.json ./

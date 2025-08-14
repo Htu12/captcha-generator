@@ -5,7 +5,7 @@ class CaptchaGeneratorService {
     constructor() {
         // Cache character sets for better performance
         this.charSets = {
-            'easy': 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz123456789',
+            'easy': 'ABCDEFGHJKLMNPQRSTUVWXYZ123456789',
             'medium': 'ABCDEFGHJKLMNPQRSTUVWXYabcdefghjkmnpqrstuvwxyz123456789',
             'hard': 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyzabcdefghjkmnpqrstuvwxyz123456789!@#$%&',
         };

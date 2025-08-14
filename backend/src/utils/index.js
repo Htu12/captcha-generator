@@ -14,9 +14,10 @@ const setConfigPublic = (config) => {
 };
 
 
+
 module.exports = {
     asyncHandler,
     StatusCodes: require("./statusCodes"),
     ReasonPhrases: require("./reasonPhrases"),
-    setConfigPublic
+    setConfigPublic,
 };

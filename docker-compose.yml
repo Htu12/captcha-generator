@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   node:
     build: ./backend
@@ -14,9 +12,9 @@ services:
   db:
     image: postgres:15
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: 15436651
-      POSTGRES_DB: mydb
+      POSTGRES_USER: jk174q6ih7
+      POSTGRES_PASSWORD: 37p44YM5oazStrc
+      POSTGRES_DB: appdb
     volumes:
       - db_data:/var/lib/postgresql/data
       - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql

@@ -1,11 +1,11 @@
 const express = require("express");
-const { log, allowSearchTime, serverUnavailable } = require("./middleware");
+const { serverUnavailable } = require("./middleware");
 const morgan = require('morgan');
 const helmet = require('helmet');
-const compression =require("compression")
+const compression = require("compression")
 const pool = require("./db");
 const path = require("path");
-const router = require("./routes/index");
+const router = require("./routes");
 const config = require("./config")
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
@@ -27,17 +27,12 @@ app.use(morgan('dev'));
 
 //Set static files directory
 app.use(express.static(path.join(__dirname, "public")));
-
-// close server if set unavailable
-app.use(serverUnavailable);
-
 // Search time middleware
 setConfigPublic({
     "BASE_URL": config.app.base_url,
     "ALLOW_SEARCH_TIME": config.app.allow_search_time
 });
 
-app.use(allowSearchTime);
 
 // Connection to the database
 pool.query("SELECT version()", (err, res) => {
@@ -47,6 +42,9 @@ pool.query("SELECT version()", (err, res) => {
     }
     console.log("Database connected at:", res.rows[0].version);
 });
+
+// close server if set unavailable
+app.use(serverUnavailable);
 
 //API routes
 app.use("/api", router);

@@ -1,6 +1,6 @@
 "use strict";
 
-const config = require("../config/index");
+const config = require("../config");
 const { ForbiddenError } = require("../utils/response/error.response");
 
 function log(req, res, next) {
@@ -24,11 +24,12 @@ function log(req, res, next) {
 }
 
 function allowSearchTime(req, res, next) {
-    // Get current time in Jakarta timezone
-    const currentTime = new Date();
+    // Get current time
+    const now = new Date();
     const allowedTime = new Date(config.app.allow_search_time);
 
-    if (currentTime < allowedTime) {
+
+    if (now.toISOString() < allowedTime.toISOString()) {
         throw new ForbiddenError("Search is not allowed at this time.");
     }
 

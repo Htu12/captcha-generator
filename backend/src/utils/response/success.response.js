@@ -15,14 +15,20 @@ class SuccessResponse {
     }
 
     send(res, obj) {
-        const { headers, cookie, contentType, dataSend } = obj;
+        const {
+            headers = {},
+            cookie = null,
+            contentType = null,
+            dataSend = null
+        } = obj || {};
+        
         res.set({ ...BASE_HEADERS, ...headers });
 
         if (cookie) {
             res.cookie(cookie.key, cookie.value, cookie.options);
         }
 
-        
+
         if (dataSend !== undefined && dataSend !== null) {
             // Nếu có contentType thì set Content-Type theo contentType (e.g. 'image/jpeg')
             if (contentType) res.type(contentType);
