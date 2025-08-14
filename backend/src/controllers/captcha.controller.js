@@ -8,12 +8,24 @@ class CaptchaController {
         // Generate captcha image
         let { imageBuffer, encryptedSolution } = await CaptchaService.createCaptchaImage();
 
-        // Set encrypted captcha in httpOnly cookie
-        _constant.COOKIE["value"] = encryptedSolution;
+        let cookie = {
+            key: _constant.COOKIE.key,
+            value: encryptedSolution,
+            options: { ..._constant.COOKIE.options }
+        };
+
+        // console.log(cookie);
+
+        let obj = {
+            headers: _constant.HEADER_IMAGE,
+            cookie,
+            contentType: _constant.TYPE_IMAGE,
+            dataSend: imageBuffer
+        }
 
         new SuccessResponse({
-            message: 'Captcha generated successfully'
-        }).send(res, _constant.HEADER, _constant.COOKIE, imageBuffer)
+            message: 'Captcha generated successfully',
+        }).send(res, obj)
     }
 
     static async verifyCaptcha(req, res) {

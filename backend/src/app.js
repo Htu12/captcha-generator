@@ -1,11 +1,15 @@
 const express = require("express");
-const { log } = require("./middleware");
+const { log, allowSearchTime, serverUnavailable } = require("./middleware");
+const morgan = require('morgan');
+const helmet = require('helmet');
+const compression =require("compression")
 const pool = require("./db");
 const path = require("path");
 const router = require("./routes/index");
 const config = require("./config")
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
+const { setConfigPublic, watchEnv } = require("./utils");
 
 const app = express();
 
@@ -17,12 +21,23 @@ app.use(cors({
     origin: config.app.base_url,
     credentials: true,
 }));
+app.use(helmet());
+app.use(compression());
+app.use(morgan('dev'));
 
 //Set static files directory
 app.use(express.static(path.join(__dirname, "public")));
 
-//logging middleware
-app.use(log);
+// close server if set unavailable
+app.use(serverUnavailable);
+
+// Search time middleware
+setConfigPublic({
+    "BASE_URL": config.app.base_url,
+    "ALLOW_SEARCH_TIME": config.app.allow_search_time
+});
+
+app.use(allowSearchTime);
 
 // Connection to the database
 pool.query("SELECT version()", (err, res) => {
@@ -37,9 +52,8 @@ pool.query("SELECT version()", (err, res) => {
 app.use("/api", router);
 
 app.get("/", (req, res) => {
-    res.send("Welcome to the Captcha Generator API");
-})
-
+    res.send("Captcha Generator API");
+});
 
 //Error handling middleware
 app.use((req, res, next) => {
@@ -55,7 +69,7 @@ app.use((error, req, res, next) => {
     res.status(status).json({
         status: status,
         message: error.message,
-        stack: config.app.env === "dev" ? error.stack : undefined,
+        stack: config.env === "dev" ? error.stack : undefined,
     });
 });
 

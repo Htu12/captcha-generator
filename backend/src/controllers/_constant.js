@@ -1,40 +1,29 @@
 const config = require("../config");
 
-const HEADER = {
+const HEADER_IMAGE = {
     'Content-Type': 'image/jpeg',
     'Access-Control-Allow-Origin': `${config.app.base_url}`,
     'Connection': 'keep-alive',
 };
 
 const COOKIE_KEY = "captcha_token"
-const SAMESITE = "None";
 const MAX_AGE = 2 * 60 * 1000;
+const TYPE_IMAGE = "jpeg";
 
 const COOKIE = {
     key: COOKIE_KEY,
     options: {
         httpOnly: true,
-        secure: true,
-        sameSite: SAMESITE,
+        secure: config.env === "prod",
+        sameSite: config.env === "prod" ? "None" : "Lax", // Use 'None' for cross-site cookies in production
         maxAge: MAX_AGE,
     }
 }
 
-const RESPONSE_CONFIG_VALUES = {
-    error: {
-        "Invalid captcha": -1,
-        "Missing captcha token": -2,
-        "Invalid captcha solution": -3,
-    },
-    success: {
-        "Scores retrieved successfully": 1,
-        "Captcha created successfully": 2,
-        "Captcha verified successfully": 3,
-    }
-}
+
 
 module.exports = {
-    HEADER,
+    HEADER_IMAGE,
     COOKIE,
-    RESPONSE_CONFIG_VALUES
+    TYPE_IMAGE
 };

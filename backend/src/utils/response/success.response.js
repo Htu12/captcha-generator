@@ -1,5 +1,7 @@
 const { StatusCodes, ReasonPhrases } = require("..");
 
+const BASE_HEADERS = { 'Cache-Control': 'no-store, no-cache, must-revalidate' };
+
 class SuccessResponse {
     constructor({
         message,
@@ -12,16 +14,27 @@ class SuccessResponse {
         this.data = data;
     }
 
-    send(res, headers = {}, cookie, dataSend) {
-        if (headers) {
-            res.set(headers);
-        }
+    send(res, obj) {
+        const { headers, cookie, contentType, dataSend } = obj;
+        res.set({ ...BASE_HEADERS, ...headers });
 
         if (cookie) {
             res.cookie(cookie.key, cookie.value, cookie.options);
         }
 
-        dataSend ? res.send(dataSend) : res.status(this.statusCode).json(this);
+        
+        if (dataSend !== undefined && dataSend !== null) {
+            // Nếu có contentType thì set Content-Type theo contentType (e.g. 'image/jpeg')
+            if (contentType) res.type(contentType);
+            return res.status(this.statusCode || 200).send(dataSend);
+        }
+
+        if (this.statusCode === 204) {
+            return res.status(this.statusCode).send();
+        }
+
+        // Mặc định: JSON
+        return res.status(this.statusCode || 200).json(this);
     }
 }
 

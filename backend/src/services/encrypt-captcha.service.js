@@ -1,12 +1,14 @@
 const crypto = require("crypto");
 
+const secretKey = process.env.CAPTCHA_SECRET;
+const algorithm = 'aes-256-cbc';
 class EncryptCaptchaService {
     static encrypt(text) {
+        if (!secretKey) {
+            throw new Error("CAPTCHA_SECRET is not set in environment");
+        }
+        
         // Encrypt the captcha solution
-        const secretKey = process.env.CAPTCHA_SECRET;
-        const algorithm = 'aes-256-cbc';
-
-        // Ensure the secret key is provided
         const key = crypto.scryptSync(secretKey, 'salt', 32);
         const iv = crypto.randomBytes(16);
 
@@ -24,8 +26,9 @@ class EncryptCaptchaService {
     }
 
     static verify(token, inputText) {
-        const secretKey = process.env.CAPTCHA_SECRET;
-        const algorithm = 'aes-256-cbc';
+        if (!secretKey) {
+            throw new Error("CAPTCHA_SECRET is not set in environment");
+        }
 
         if (!token || !inputText) return false;
 
@@ -47,7 +50,7 @@ class EncryptCaptchaService {
         const decipher = crypto.createDecipheriv(algorithm, key, iv);
         let decrypted = decipher.update(encryptedHex, 'hex', 'utf8');
         decrypted += decipher.final('utf8');
-        
+
         // Compare decrypted text with input text
         return decrypted === inputText;
     }

@@ -4,15 +4,15 @@ const EncryptCaptchaService = require('./encrypt-captcha.service');
 const { BadRequestError } = require('../utils/response/error.response');
 const { app } = require("../config/index")
 
+const captchaGen = new CaptchaGeneratorService();
 class CaptchaService {
     /**
      * @returns an object containing the captcha image buffer and encrypted solution
      * @throws BadRequestError if the captcha solution is invalid
      */
     static async createCaptchaImage() {
-        let captchaLevel = app.captcha_level;
-        let cap = new CaptchaGeneratorService();
-        let result = cap.generate(captchaLevel);
+        const options = app.captcha_level;
+        const result = captchaGen.generate(options);
 
         // Encrypt the captcha solution
         let encryptedData = EncryptCaptchaService.encrypt(result.solution);
@@ -36,7 +36,7 @@ class CaptchaService {
             throw new BadRequestError("Invalid captcha solution");
         }
 
-        return true;
+        return isValid;
     }
 }
 
