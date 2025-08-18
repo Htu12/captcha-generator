@@ -11,6 +11,7 @@ const prod = {
         port: process.env.PORT_PROD,
         captcha_level: CAPTCHA_LEVELS[process.env.CAPTCHA_LEVEL_PROD],
         base_url: process.env.BASE_URL_PROD,
+        cors_origin: process.env.CORS_ORIGIN_PROD,
         allow_search_time: process.env.ALLOW_SEARCH_TIME || "",
     },
     db: {
@@ -30,6 +31,7 @@ const dev = {
         captcha_level: CAPTCHA_LEVELS[process.env.CAPTCHA_LEVEL_DEV],
         base_url: process.env.BASE_URL_DEV,
         allow_search_time: process.env.ALLOW_SEARCH_TIME || "",
+        cors_origin: process.env.CORS_ORIGIN_DEV,
     },
     db: {
         server: process.env.DB_SERVER_DEV,

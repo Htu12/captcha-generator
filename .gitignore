@@ -6,3 +6,4 @@
 
 #Package
 /backend/package-lock.json
+/nginx/default.conf

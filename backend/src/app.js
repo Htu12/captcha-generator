@@ -9,7 +9,7 @@ const router = require("./routes");
 const config = require("./config")
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
-const { setConfigPublic } = require("./utils");
+const { setConfigPublic, testConnectDatabase } = require("./utils");
 
 const app = express();
 
@@ -18,7 +18,7 @@ app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cors({
-    origin: config.app.base_url,
+    origin: config.app.cors_origin,
     credentials: true,
 }));
 app.use(helmet());
@@ -34,13 +34,7 @@ setConfigPublic({
 });
 
 // Connection to the database
-pool.query("SELECT version()", (err, res) => {
-    if (err) {
-        console.error("Database connection error:", err);
-        process.exit(1);
-    }
-    console.log("Database connected at:", res.rows[0].version);
-});
+testConnectDatabase(pool);
 
 // close server if set unavailable
 app.use(serverUnavailable);

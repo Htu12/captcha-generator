@@ -1,6 +1,5 @@
 const fs = require('fs');
 const path = require('path');
-const dotenv = require("dotenv");
 
 const asyncHandler = (fn) => (req, res, next) => {
     Promise.resolve(fn(req, res, next)).catch(next);
@@ -13,6 +12,16 @@ const setConfigPublic = (config) => {
     );
 };
 
+function testConnectDatabase(pool) {
+    pool.query("SELECT version()", (err, res) => {
+        if (err) {
+            console.error("Database connection error:", err);
+            process.exit(1);
+        }
+        console.log("Database connected at:", res.rows[0].version);
+    });
+}
+
 
 
 module.exports = {
@@ -20,4 +29,5 @@ module.exports = {
     StatusCodes: require("./statusCodes"),
     ReasonPhrases: require("./reasonPhrases"),
     setConfigPublic,
+    testConnectDatabase,
 };
