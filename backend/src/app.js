@@ -9,7 +9,7 @@ const router = require("./routes");
 const config = require("./config")
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
-const { setConfigPublic, watchEnv } = require("./utils");
+const { setConfigPublic } = require("./utils");
 
 const app = express();
 
@@ -33,7 +33,6 @@ setConfigPublic({
     "ALLOW_SEARCH_TIME": config.app.allow_search_time
 });
 
-
 // Connection to the database
 pool.query("SELECT version()", (err, res) => {
     if (err) {
@@ -50,7 +49,9 @@ app.use(serverUnavailable);
 app.use("/api", router);
 
 app.get("/", (req, res) => {
-    res.send("Captcha Generator API");
+    res.status(200).json({
+        message: "Hello World!"
+    });
 });
 
 //Error handling middleware

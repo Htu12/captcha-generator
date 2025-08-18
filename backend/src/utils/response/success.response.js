@@ -7,25 +7,29 @@ class SuccessResponse {
         message,
         statusCode = StatusCodes.OK,
         reasonStatusCode = ReasonPhrases.OK,
-        data = {},
+        data = [], //default to empty array
     }) {
         this.message = !message ? reasonStatusCode : message;
         this.statusCode = statusCode;
         this.data = data;
     }
 
-    send(res, obj) {
+    send(res, obj, isClearCookie = false) {
         const {
             headers = {},
             cookie = null,
             contentType = null,
-            dataSend = null
+            dataSend = null,
         } = obj || {};
         
         res.set({ ...BASE_HEADERS, ...headers });
 
         if (cookie) {
             res.cookie(cookie.key, cookie.value, cookie.options);
+        }
+
+        if (isClearCookie) {
+            res.clearCookie("captcha_token");
         }
 
 

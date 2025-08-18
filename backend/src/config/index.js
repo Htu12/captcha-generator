@@ -1,7 +1,7 @@
 const CAPTCHA_LEVELS = require("./_constant");
 
 require("dotenv").config({
-    path: './.env'
+    path: '../.env'
 });
 
 const prod = {

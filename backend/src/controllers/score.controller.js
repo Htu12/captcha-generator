@@ -14,14 +14,13 @@ class ScoreController {
 
         let data = await ScoreService.searchScore(SBD, CaptchaValue, captchaToken);
 
-        if (!data) {
-            return new NO_CONTENT().send(res);
-        }
+        if (!data) return new NO_CONTENT().send(res);
+
 
         new OK({
             message: "Score retrieved successfully",
             data: data
-        }).send(res);
+        }).send(res, null, true);
 
     }
 }

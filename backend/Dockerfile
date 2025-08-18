@@ -2,7 +2,7 @@
 FROM node:22
 
 # Tạo thư mục app trong container
-WORKDIR /app
+WORKDIR /usr/src/app
 
 # Copy package.json và cài đặt dependencies
 COPY package*.json ./
@@ -12,6 +12,7 @@ RUN npm install
 COPY . .
 
 # Mở port 3000
+ENV NODE_ENV=prod
 EXPOSE 3000
 
 # Chạy app

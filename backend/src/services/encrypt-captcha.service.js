@@ -39,10 +39,7 @@ class EncryptCaptchaService {
 
         // check if the token has expired
         const now = Math.floor(Date.now() / 1000);
-        if (now > parseInt(timestamp)) {
-            console.log('Captcha expired');
-            return false;
-        }
+        if (now > parseInt(timestamp)) return false;
 
         const key = crypto.scryptSync(secretKey, 'salt', 32);
         const iv = Buffer.from(ivHex, 'hex');

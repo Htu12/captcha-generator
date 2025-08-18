@@ -35,7 +35,7 @@ class CaptchaController {
         new OK({
             message: "Captcha verified successfully",
             data: await CaptchaService.verifyCaptcha(captchaToken, req.body.CaptchaValue),
-        }).send(res);
+        }).send(res, null, true);
     }
 }
 
