@@ -2,8 +2,7 @@
 /backend/node_modules/
 
 # Environment variables
-.env
+
 
 #Package
 /backend/package-lock.json
-/nginx/default.conf
