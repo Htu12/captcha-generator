@@ -40,7 +40,7 @@ jobs:
         DB_PASSWORD_PROD=${{ secrets.DB_PASSWORD_PROD }}
         EOF
 
-    - name: Deploy to CentOS Server (User htu12)
+    - name: Deploy to CentOS Server (User: htu12)
       uses: appleboy/ssh-action@v1.0.3
       env:
         ALLOW_SEARCH_TIME: ${{ secrets.ALLOW_SEARCH_TIME }}
@@ -67,6 +67,32 @@ jobs:
           mkdir -p $PROJECT_PATH
           mkdir -p $BACKUP_PATH
           
+          # Fix Docker permissions for user htu12
+          echo "🔧 Setting up Docker permissions..."
+          if ! groups htu12 | grep -q docker; then
+            echo "Adding htu12 to docker group..."
+            sudo usermod -aG docker htu12
+          fi
+          
+          # Reload group membership without logout
+          newgrp docker << DOCKERCMDS || true
+          echo "Docker group membership updated"
+          DOCKERCMDS
+          
+          # Alternative: Change docker socket permissions temporarily
+          sudo chmod 666 /var/run/docker.sock || true
+          
+          # Restart Docker service to ensure clean state
+          if ! systemctl is-active --quiet docker; then
+            echo "🔧 Starting Docker service..."
+            sudo systemctl start docker
+            sleep 5
+          else
+            echo "🔄 Restarting Docker service..."
+            sudo systemctl restart docker
+            sleep 10
+          fi
+          
           # Backup current deployment
           if [ -d "$PROJECT_PATH/.git" ]; then
             echo "💾 Creating backup..."
@@ -92,7 +118,7 @@ jobs:
           # Navigate to project directory
           cd $PROJECT_PATH
           
-          # Create .env file using environment variables from GitHub Actions
+          # Create .env file with environment variables
           echo "⚙️ Creating environment file..."
           cat > .env << ENVEOF
           NODE_ENV=prod
@@ -119,32 +145,41 @@ jobs:
           DB_PASSWORD_PROD=$DB_PASSWORD_PROD
           ENVEOF
           
-          # Check if Docker is running (CentOS specific)
-          if ! systemctl is-active --quiet docker; then
-            echo "🔧 Starting Docker service..."
-            sudo systemctl start docker
-            sleep 5
-          fi
-          
-          # Stop existing containers
+          # Stop existing containers (with sudo if needed)
           echo "🛑 Stopping existing containers..."
-          if command -v docker-compose &> /dev/null; then
-            docker-compose down || true
+          if docker-compose down 2>/dev/null; then
+            echo "Stopped with docker-compose"
+          elif docker compose down 2>/dev/null; then
+            echo "Stopped with docker compose"
+          elif sudo docker-compose down 2>/dev/null; then
+            echo "Stopped with sudo docker-compose"
+          elif sudo docker compose down 2>/dev/null; then
+            echo "Stopped with sudo docker compose"
           else
-            docker compose down || true
+            echo "No containers to stop or docker not accessible"
           fi
           
           # Clean up Docker system
           echo "🧹 Cleaning up Docker resources..."
-          docker system prune -f || true
-          docker volume prune -f || true
+          if docker system prune -f 2>/dev/null; then
+            echo "Cleaned with docker"
+          elif sudo docker system prune -f 2>/dev/null; then
+            echo "Cleaned with sudo docker"
+          fi
           
           # Build and start new containers
           echo "🔨 Building and starting containers..."
-          if command -v docker-compose &> /dev/null; then
-            docker-compose up -d --build --force-recreate
+          if docker-compose up -d --build --force-recreate 2>/dev/null; then
+            echo "Started with docker-compose"
+          elif docker compose up -d --build --force-recreate 2>/dev/null; then
+            echo "Started with docker compose"
+          elif sudo docker-compose up -d --build --force-recreate 2>/dev/null; then
+            echo "Started with sudo docker-compose"
+          elif sudo docker compose up -d --build --force-recreate 2>/dev/null; then
+            echo "Started with sudo docker compose"
           else
-            docker compose up -d --build --force-recreate
+            echo "❌ Failed to start containers"
+            exit 1
           fi
           
           # Wait for containers to be ready
@@ -153,21 +188,29 @@ jobs:
           
           # Check container status
           echo "📊 Container status:"
-          docker ps
+          if docker ps 2>/dev/null; then
+            echo "Docker accessible without sudo"
+          elif sudo docker ps 2>/dev/null; then
+            echo "Docker accessible with sudo"
+          else
+            echo "Cannot access Docker"
+          fi
           
           # Show Docker logs for debugging
           echo "📋 Recent container logs:"
-          if command -v docker-compose &> /dev/null; then
-            docker-compose logs --tail=20
-          else
-            docker compose logs --tail=20
+          if docker-compose logs --tail=20 2>/dev/null; then
+            echo "Logs from docker-compose"
+          elif docker compose logs --tail=20 2>/dev/null; then
+            echo "Logs from docker compose"
+          elif sudo docker-compose logs --tail=20 2>/dev/null; then
+            echo "Logs from sudo docker-compose"
+          elif sudo docker compose logs --tail=20 2>/dev/null; then
+            echo "Logs from sudo docker compose"
           fi
           
           # Health check
           echo "🔍 Health check..."
-          if docker ps | grep -q "Up.*80"; then
-            echo "✅ Containers are running with port 80 exposed"
-          fi
+          sleep 10
           
           if curl -f http://localhost:80 > /dev/null 2>&1; then
             echo "✅ Application is responding on port 80"
@@ -175,13 +218,6 @@ jobs:
             echo "✅ Application is responding on port 3000"
           else
             echo "⚠️ Application might not be fully ready yet"
-            echo "🔍 Checking container logs..."
-            docker ps
-            if command -v docker-compose &> /dev/null; then
-              docker-compose logs app
-            else
-              docker compose logs app
-            fi
           fi
           
           echo "🎉 Deployment completed for user htu12 on CentOS!"
