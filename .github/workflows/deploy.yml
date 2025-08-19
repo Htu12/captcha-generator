@@ -13,13 +13,6 @@ jobs:
     - name: Checkout Repository
       uses: actions/checkout@v4
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18'
-        cache: 'npm'
-        cache-dependency-path: backend/package-lock.json
-
     - name: Create Environment File
       run: |
         cat > .env << 'EOF'
@@ -49,6 +42,14 @@ jobs:
 
     - name: Deploy to CentOS Server (User htu12)
       uses: appleboy/ssh-action@v1.0.3
+      env:
+        ALLOW_SEARCH_TIME: ${{ secrets.ALLOW_SEARCH_TIME }}
+        CAPTCHA_SECRET: ${{ secrets.CAPTCHA_SECRET }}
+        BASE_URL_PROD: ${{ secrets.BASE_URL_PROD }}
+        CORS_ORIGIN_PROD: ${{ secrets.CORS_ORIGIN_PROD }}
+        DB_NAME_PROD: ${{ secrets.DB_NAME_PROD }}
+        DB_USER_PROD: ${{ secrets.DB_USER_PROD }}
+        DB_PASSWORD_PROD: ${{ secrets.DB_PASSWORD_PROD }}
       with:
         host: ${{ secrets.SERVER_HOST }}
         username: htu12
@@ -91,21 +92,21 @@ jobs:
           # Navigate to project directory
           cd $PROJECT_PATH
           
-          # Create .env file using environment variables
+          # Create .env file using environment variables from GitHub Actions
           echo "⚙️ Creating environment file..."
-          cat > .env << EOF
+          cat > .env << ENVEOF
           NODE_ENV=prod
           IS_AVAILABLE=1
           PORT_DEV=3000
           PORT_PROD=3000
-          ALLOW_SEARCH_TIME="${ALLOW_SEARCH_TIME}"
+          ALLOW_SEARCH_TIME="$ALLOW_SEARCH_TIME"
           CAPTCHA_LEVEL_DEV=medium
           CAPTCHA_LEVEL_PROD=easy
-          CAPTCHA_SECRET=${CAPTCHA_SECRET}
-          BASE_URL_PROD=${BASE_URL_PROD}
+          CAPTCHA_SECRET=$CAPTCHA_SECRET
+          BASE_URL_PROD=$BASE_URL_PROD
           BASE_URL_DEV=http://127.0.0.1:3000
           CORS_ORIGIN_DEV=http://127.0.0.1:3000
-          CORS_ORIGIN_PROD=${CORS_ORIGIN_PROD}
+          CORS_ORIGIN_PROD=$CORS_ORIGIN_PROD
           DB_SERVER_DEV=localhost
           DB_PORT_DEV=5432
           DB_NAME_DEV=learn_postgres
@@ -113,10 +114,10 @@ jobs:
           DB_PASSWORD_DEV=123456
           DB_SERVER_PROD=db
           DB_PORT_PROD=5432
-          DB_NAME_PROD=${DB_NAME_PROD}
-          DB_USER_PROD=${DB_USER_PROD}
-          DB_PASSWORD_PROD=${DB_PASSWORD_PROD}
-          EOF
+          DB_NAME_PROD=$DB_NAME_PROD
+          DB_USER_PROD=$DB_USER_PROD
+          DB_PASSWORD_PROD=$DB_PASSWORD_PROD
+          ENVEOF
           
           # Check if Docker is running (CentOS specific)
           if ! systemctl is-active --quiet docker; then
@@ -184,14 +185,6 @@ jobs:
           fi
           
           echo "🎉 Deployment completed for user htu12 on CentOS!"
-      env:
-        ALLOW_SEARCH_TIME: ${{ secrets.ALLOW_SEARCH_TIME }}
-        CAPTCHA_SECRET: ${{ secrets.CAPTCHA_SECRET }}
-        BASE_URL_PROD: ${{ secrets.BASE_URL_PROD }}
-        CORS_ORIGIN_PROD: ${{ secrets.CORS_ORIGIN_PROD }}
-        DB_NAME_PROD: ${{ secrets.DB_NAME_PROD }}
-        DB_USER_PROD: ${{ secrets.DB_USER_PROD }}
-        DB_PASSWORD_PROD: ${{ secrets.DB_PASSWORD_PROD }}
 
     - name: Notify Deployment Status
       if: always()
