@@ -39,7 +39,7 @@ services:
     env_file: .env
     environment:
       DATABASE_URL: postgres://${DB_USER_PROD}:${DB_PASSWORD_PROD}@db:5432/${DB_NAME_PROD}
-      NODE_ENV: prod
+      NODE_ENV: prod  
       PORT: 3000
     depends_on:
       db:
@@ -64,6 +64,3 @@ services:
     networks:
       - web
       - internal
-    
-
-
