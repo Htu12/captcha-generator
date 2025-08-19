@@ -13,75 +13,67 @@ jobs:
     - name: Checkout Repository
       uses: actions/checkout@v4
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18'
-        cache: 'npm'
-        cache-dependency-path: backend/package-lock.json
-
     - name: Create Environment File
       run: |
-        cat > .env << EOF
+        cat > .env << 'EOF'
         NODE_ENV=prod
         IS_AVAILABLE=1
-        PORT_DEV=3000
         PORT_PROD=3000
         ALLOW_SEARCH_TIME="${{ secrets.ALLOW_SEARCH_TIME }}"
-        CAPTCHA_LEVEL_DEV=medium
         CAPTCHA_LEVEL_PROD=easy
         CAPTCHA_SECRET=${{ secrets.CAPTCHA_SECRET }}
         BASE_URL_PROD=${{ secrets.BASE_URL_PROD }}
-        BASE_URL_DEV=http://127.0.0.1:3000
-        CORS_ORIGIN_DEV=http://127.0.0.1:3000
         CORS_ORIGIN_PROD=${{ secrets.CORS_ORIGIN_PROD }}
-        DB_SERVER_DEV=localhost
-        DB_PORT_DEV=5432
-        DB_NAME_DEV=learn_postgres
-        DB_USER_DEV=huutu12
-        DB_PASSWORD_DEV=123456
         DB_SERVER_PROD=db
         DB_PORT_PROD=5432
         DB_NAME_PROD=${{ secrets.DB_NAME_PROD }}
         DB_USER_PROD=${{ secrets.DB_USER_PROD }}
         DB_PASSWORD_PROD=${{ secrets.DB_PASSWORD_PROD }}
         EOF
-
-    - name: Deploy to CentOS Server (User: htu12)
+    - name: Deploy to CentOS Server
       uses: appleboy/ssh-action@v1.0.3
+      env:
+        ALLOW_SEARCH_TIME: ${{ secrets.ALLOW_SEARCH_TIME }}
+        CAPTCHA_SECRET: ${{ secrets.CAPTCHA_SECRET }}
+        BASE_URL_PROD: ${{ secrets.BASE_URL_PROD }}
+        CORS_ORIGIN_PROD: ${{ secrets.CORS_ORIGIN_PROD }}
+        DB_NAME_PROD: ${{ secrets.DB_NAME_PROD }}
+        DB_USER_PROD: ${{ secrets.DB_USER_PROD }}
+        DB_PASSWORD_PROD: ${{ secrets.DB_PASSWORD_PROD }}
       with:
         host: ${{ secrets.SERVER_HOST }}
-        username: htu12
+        username: ${{ secrets.SERVER_USER }}
         key: ${{ secrets.SERVER_SSH_KEY }}
         port: ${{ secrets.SERVER_PORT || 22 }}
+        envs: ALLOW_SEARCH_TIME,CAPTCHA_SECRET,BASE_URL_PROD,CORS_ORIGIN_PROD,DB_NAME_PROD,DB_USER_PROD,DB_PASSWORD_PROD
         script: |
-          echo "🚀 Starting deployment on CentOS for user htu12..."
-          
-          # Set project path for user htu12
-          PROJECT_PATH="/home/htu12/captcha-generator"
-          BACKUP_PATH="/home/htu12/backups"
-          
+          echo "Starting deployment on CentOS for user ${{ secrets.SERVER_USER }}..."
+
+          # Set project path for user ${{ secrets.SERVER_USER }}
+          PROJECT_PATH="/home/${{ secrets.SERVER_USER }}/captcha-generator"
+          BACKUP_PATH="/home/${{ secrets.SERVER_USER }}/backups"
+
           # Create directories if not exist
           mkdir -p $PROJECT_PATH
           mkdir -p $BACKUP_PATH
           
           # Backup current deployment
           if [ -d "$PROJECT_PATH/.git" ]; then
-            echo "💾 Creating backup..."
+            echo "Creating backup..."
             BACKUP_NAME="backup-$(date +%Y%m%d_%H%M%S)"
             cp -r $PROJECT_PATH $BACKUP_PATH/$BACKUP_NAME
           fi
           
           # Clone repository if not exists
           if [ ! -d "$PROJECT_PATH/.git" ]; then
-            echo "📥 Cloning repository..."
+            echo "Cloning repository..."
             git clone https://github.com/Htu12/captcha-generator.git $PROJECT_PATH
           else
             # Navigate to project directory
             cd $PROJECT_PATH
             
             # Pull latest changes
-            echo "📦 Pulling latest changes..."
+            echo "Pulling latest changes..."
             git fetch origin
             git reset --hard origin/main
             git clean -fd
@@ -90,55 +82,46 @@ jobs:
           # Navigate to project directory
           cd $PROJECT_PATH
           
-          # Create .env file with all variables
-          echo "⚙️ Creating environment file..."
-          cat > .env << EOF
+          # Create .env file using environment variables from GitHub Actions
+          echo "Creating environment file..."
+          cat > .env << ENVEOF
           NODE_ENV=prod
           IS_AVAILABLE=1
-          PORT_DEV=3000
           PORT_PROD=3000
-          ALLOW_SEARCH_TIME="${{ secrets.ALLOW_SEARCH_TIME }}"
-          CAPTCHA_LEVEL_DEV=medium
+          ALLOW_SEARCH_TIME="$ALLOW_SEARCH_TIME"
           CAPTCHA_LEVEL_PROD=easy
-          CAPTCHA_SECRET=${{ secrets.CAPTCHA_SECRET }}
-          BASE_URL_PROD=${{ secrets.BASE_URL_PROD }}
-          BASE_URL_DEV=http://127.0.0.1:3000
-          CORS_ORIGIN_DEV=http://127.0.0.1:3000
-          CORS_ORIGIN_PROD=${{ secrets.CORS_ORIGIN_PROD }}
-          DB_SERVER_DEV=localhost
-          DB_PORT_DEV=5432
-          DB_NAME_DEV=learn_postgres
-          DB_USER_DEV=huutu12
-          DB_PASSWORD_DEV=123456
+          CAPTCHA_SECRET=$CAPTCHA_SECRET
+          BASE_URL_PROD=$BASE_URL_PROD
+          CORS_ORIGIN_PROD=$CORS_ORIGIN_PROD
           DB_SERVER_PROD=db
           DB_PORT_PROD=5432
-          DB_NAME_PROD=${{ secrets.DB_NAME_PROD }}
-          DB_USER_PROD=${{ secrets.DB_USER_PROD }}
-          DB_PASSWORD_PROD=${{ secrets.DB_PASSWORD_PROD }}
-          EOF
+          DB_NAME_PROD=$DB_NAME_PROD
+          DB_USER_PROD=$DB_USER_PROD
+          DB_PASSWORD_PROD=$DB_PASSWORD_PROD
+          ENVEOF
           
           # Check if Docker is running (CentOS specific)
           if ! systemctl is-active --quiet docker; then
-            echo "🔧 Starting Docker service..."
+            echo "Starting Docker service..."
             sudo systemctl start docker
             sleep 5
           fi
           
           # Stop existing containers
-          echo "🛑 Stopping existing containers..."
+          echo "Stopping existing containers..."
           if command -v docker-compose &> /dev/null; then
             docker-compose down || true
           else
             docker compose down || true
           fi
           
-          # Clean up Docker system (CentOS might need more cleanup)
-          echo "🧹 Cleaning up Docker resources..."
+          # Clean up Docker system
+          echo "Cleaning up Docker resources..."
           docker system prune -f || true
           docker volume prune -f || true
           
           # Build and start new containers
-          echo "🔨 Building and starting containers..."
+          echo "Building and starting containers..."
           if command -v docker-compose &> /dev/null; then
             docker-compose up -d --build --force-recreate
           else
@@ -146,15 +129,15 @@ jobs:
           fi
           
           # Wait for containers to be ready
-          echo "⏳ Waiting for containers to start..."
+          echo "Waiting for containers to start..."
           sleep 30
           
           # Check container status
-          echo "📊 Container status:"
+          echo "Container status:"
           docker ps
           
           # Show Docker logs for debugging
-          echo "📋 Recent container logs:"
+          echo "Recent container logs:"
           if command -v docker-compose &> /dev/null; then
             docker-compose logs --tail=20
           else
@@ -162,18 +145,18 @@ jobs:
           fi
           
           # Health check
-          echo "🔍 Health check..."
+          echo "Health check..."
           if docker ps | grep -q "Up.*80"; then
-            echo "✅ Containers are running with port 80 exposed"
+            echo "Containers are running with port 80 exposed"
           fi
           
           if curl -f http://localhost:80 > /dev/null 2>&1; then
-            echo "✅ Application is responding on port 80"
+            echo "Application is responding on port 80"
           elif curl -f http://localhost:3000 > /dev/null 2>&1; then
-            echo "✅ Application is responding on port 3000"
+            echo "Application is responding on port 3000"
           else
-            echo "⚠️ Application might not be fully ready yet"
-            echo "🔍 Checking container logs..."
+            echo "Application might not be fully ready yet"
+            echo "Checking container logs..."
             docker ps
             if command -v docker-compose &> /dev/null; then
               docker-compose logs app
@@ -182,14 +165,13 @@ jobs:
             fi
           fi
           
-          echo "🎉 Deployment completed for user htu12 on CentOS!"
-
+          echo "Deployment completed for user htu12 on CentOS!"
     - name: Notify Deployment Status
       if: always()
       run: |
         if [ "${{ job.status }}" == "success" ]; then
-          echo "✅ Deployment successful!"
+          echo "Deployment successful!"
         else
-          echo "❌ Deployment failed!"
+          echo "Deployment failed!"
           exit 1
         fi

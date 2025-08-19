@@ -2,7 +2,7 @@
 FROM node:22
 
 # Tạo thư mục app trong container
-WORKDIR /usr/src/app
+WORKDIR /app
 
 # Copy package.json và cài đặt dependencies
 COPY package*.json ./
