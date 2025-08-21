@@ -6,7 +6,7 @@ WORKDIR /captcha-app
 
 # Copy package.json và cài đặt dependencies
 COPY package*.json ./
-RUN npm install --omit=dev
+RUN npm install 
 
 # Copy toàn bộ mã nguồn vào container
 COPY . .
