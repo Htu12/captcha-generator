@@ -16,7 +16,6 @@ jobs:
       - name: View code in repository
         run: ls -la
 
-      # Dùng SSH action để chạy lệnh từ xa (không phải SCP)
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -25,40 +24,38 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           port: ${{ secrets.SERVER_PORT }}
           script_stop: true
-          # Nếu server chưa có Docker/Docker Compose v2, hãy cài trước.
           script: |
             set -euo pipefail
+
+            # Kiểm tra daemon
+            sudo systemctl status docker --no-pager || sudo systemctl start docker
 
             PROJECT_PATH="/home/${{ secrets.SERVER_USER }}/${{ secrets.PROJECT_NAME }}"
             REPO_SSH="git@github.com:Htu12/captcha-generator.git"
 
-            # Tạo thư mục nếu chưa tồn tại
-            if [ ! -d "$PROJECT_PATH" ]; then
-              mkdir -p "$PROJECT_PATH"
-            fi
-
-            # Clone lần đầu nếu chưa có .git
+            mkdir -p "$PROJECT_PATH"
             if [ ! -d "$PROJECT_PATH/.git" ]; then
-              echo "Cloning repository via SSH..."
+              # seed known_hosts cho github
+              mkdir -p ~/.ssh && chmod 700 ~/.ssh
+              ssh-keygen -R github.com >/dev/null 2>&1 || true
+              ssh-keyscan -H github.com >> ~/.ssh/known_hosts 2>/dev/null
+              chmod 600 ~/.ssh/known_hosts
               git clone "$REPO_SSH" "$PROJECT_PATH"
             fi
 
-            # Cập nhật code về main mới nhất
             cd "$PROJECT_PATH"
             git fetch --all --prune
             git checkout -f main
             git reset --hard origin/main
             git clean -fdx
 
-            # Optional: dọn Docker rác
-            echo "Cleaning up Docker resources..."
-            docker system prune -f || true
-            docker volume prune -f || true
+            # Dọn tài nguyên + deploy bằng sudo
+            sudo docker system prune -f || true
+            sudo docker volume prune -f || true
 
-            # Recreate stack
-            docker compose down || true
-            docker compose up -d --build
+            # docker compose v2
+            sudo docker compose down || true
+            sudo docker compose up -d --build
 
-            # Health check nhẹ
             sleep 10
-            docker ps
+            sudo docker ps
