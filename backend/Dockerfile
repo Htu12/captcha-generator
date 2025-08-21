@@ -12,7 +12,6 @@ RUN npm install
 COPY . .
 
 # Mở port 3000
-ENV NODE_ENV=prod
 EXPOSE 3000
 
 # Chạy app

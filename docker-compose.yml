@@ -38,9 +38,19 @@ services:
     restart: unless-stopped
     env_file: .env
     environment:
-      DATABASE_URL: postgres://${DB_USER_PROD}:${DB_PASSWORD_PROD}@db:5432/${DB_NAME_PROD}
-      NODE_ENV: prod  
-      PORT: 3000
+      NODE_ENV: ${NODE_ENV}
+      IS_AVAILABLE: ${IS_AVAILABLE}
+      PORT_PROD: ${PORT_PROD}
+      ALLOW_SEARCH_TIME: ${ALLOW_SEARCH_TIME}
+      CAPTCHA_LEVEL_PROD: ${CAPTCHA_LEVEL_PROD}
+      CAPTCHA_SECRET: ${CAPTCHA_SECRET}
+      BASE_URL_PROD: ${BASE_URL_PROD}
+      CORS_ORIGIN_PROD: ${CORS_ORIGIN_PROD}
+      DB_SERVER_PROD: ${DB_SERVER_PROD}
+      DB_PORT_PROD: ${DB_PORT_PROD}
+      DB_NAME_PROD: ${DB_NAME_PROD}
+      DB_USER_PROD: ${DB_USER_PROD}
+      DB_PASSWORD_PROD: ${DB_PASSWORD_PROD}
     depends_on:
       db:
         condition: service_healthy
