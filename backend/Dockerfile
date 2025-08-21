@@ -2,11 +2,11 @@
 FROM node:22
 
 # Tạo thư mục app trong container
-WORKDIR /app
+WORKDIR /captcha-app
 
 # Copy package.json và cài đặt dependencies
 COPY package*.json ./
-RUN npm install
+RUN npm install --omit=dev
 
 # Copy toàn bộ mã nguồn vào container
 COPY . .
@@ -15,4 +15,4 @@ COPY . .
 EXPOSE 3000
 
 # Chạy app
-CMD ["node", "index.js"]
+CMD ["sh", "-c", "node index.js"]
