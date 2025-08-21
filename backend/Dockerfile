@@ -1,18 +1,36 @@
-# Dựa trên Node.js bản chính thức
-FROM node:22
+# ---------- Builder: compile native deps ----------
+FROM node:22-bookworm-slim AS builder
 
-# Tạo thư mục app trong container
+# Toolchain + headers để build node-canvas
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential python3 pkg-config \
+    libcairo2-dev libpango1.0-dev libjpeg62-turbo-dev libgif-dev librsvg2-dev \
+  && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /captcha-app
 
-# Copy package.json và cài đặt dependencies
+# Cài prod deps deterministically
 COPY package*.json ./
-RUN npm install 
+# Nếu dùng lockfile, ưu tiên npm ci
+RUN npm ci --omit=dev || npm install --omit=dev
 
-# Copy toàn bộ mã nguồn vào container
+# Copy source vào builder để nếu có postinstall cần source
 COPY . .
 
-# Mở port 3000
-EXPOSE 3000
+# ---------- Runtime: chỉ giữ libs runtime ----------
+FROM node:22-bookworm-slim
 
-# Chạy app
-CMD ["sh", "-c", "node index.js"]
+# Libs runtime cho canvas (không cần headers)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libcairo2 libpango-1.0-0 libpangocairo-1.0-0 \
+    libjpeg62-turbo libgif7 librsvg2-2 \
+  && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /captcha-app
+
+# Copy toàn bộ app đã cài deps từ builder
+COPY --from=builder /captcha-app /captcha-app
+
+ENV NODE_ENV=production
+EXPOSE 3000
+CMD ["node", "index.js"]
